@@ -1,0 +1,122 @@
+<html>
+<title>Todo List CSS</title>
+<body>
+    <style>
+        body{
+            font-family: Arial;
+        }
+        .addbutton{
+            background-color: green;
+            color: white;
+            border:none;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .deletebutton{
+            background-color: darkred;
+            color: white;
+            border:none;
+            font-size: 15px;
+            cursor: pointer;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .todogrid,.todogrid-input{
+            display: grid;
+            grid-template-columns: 200px 150px 150px 100px;
+            column-gap: 10px;
+            row-gap: 10px;
+        }
+        .todogrid-input{
+            margin-bottom: 10px;
+        }
+        .nameinp,.dueinp,.timeinp{font-size: 15px; padding: 6px;}
+        .subscribe-button{
+                border: none;
+                background-color: black;
+                color: white;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                padding-left: 15px;
+                padding-right: 15px;
+                border-radius: 50px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .is-subscribed{
+                border: none;
+                background-color: rgb(242,242,242);
+                color: black;
+            }
+    </style>
+    <p>Todo List</p>
+    <div class="todogrid-input">
+        <input class="js-input1 nameinp" placeholder="Todo name"></input>
+        <input class="js-input2 dueinp" type="date"></input>
+        <input class="js-input3 timeinp" type="time"></input>
+        <button class="addbutton" onclick="addtodo();rendertodolist()">Add</button>
+    </div>
+    <div class="js-display"></div>
+    <p>This Button is Just for fun👇</p>
+            <button class='js-button subscribe-button' onclick="
+        ButtonElement=document.querySelector('.js-button');
+        if (ButtonElement.innerHTML==='Subscribe'){
+            ButtonElement.innerHTML='Subscribed';
+            ButtonElement.classList.add('is-subscribed');
+            localStorage.setItem('Q','Subscribe')
+
+        }
+        else{
+            localStorage.setItem('Q','not Subscribe');
+            ButtonElement.innerHTML='Subscribe';
+            ButtonElement.classList.remove('is-subscribed');
+        }">Subscribe</button>
+    <script>
+        const MyArr=JSON.parse(localStorage.getItem('listarr'))||[]
+        if(localStorage.getItem('listarr')===''){
+
+        }
+        else{
+            rendertodolist()
+        }
+        function addtodo(){
+            const InputElement=document.querySelector(".js-input1")
+            const InputElement2=document.querySelector(".js-input2")
+            const InputElement3=document.querySelector(".js-input3")
+            const DisplayElement=document.querySelector(".js-display")
+            const a=InputElement.value;
+            const b=InputElement2.value;
+            const c=InputElement3.value;
+            MyArr.push({name:a,duedate:b,duetime:c})
+            localStorage.setItem('listarr',JSON.stringify(MyArr))
+        }
+        function rendertodolist(){
+            const DisplayElement=document.querySelector(".js-display")
+            var todolisthtml=``;
+            for(let i=0;i<MyArr.length;i++){
+                const{name,duedate,duetime}=MyArr[i];
+                const html=`
+                <div class="todogrid">
+                <div>${name}</div> 
+                <div>${duedate}</div> 
+                <div>${duetime}</div> 
+                <button class="deletebutton" onclick="MyArr.splice(${i},1);rendertodolist();localStorage.setItem('listarr',JSON.stringify(MyArr))">Delete</button>
+                </div>`;
+                todolisthtml+=html;
+            }
+            DisplayElement.innerHTML=todolisthtml;
+        }
+
+        const a=localStorage.getItem('Q');
+            ButtonElement=document.querySelector('.js-button');
+            if(a==='Subscribe'){
+                ButtonElement.innerText='Subscribed'
+                ButtonElement.classList.add('is-subscribed');
+            }
+            else{
+                ButtonElement.innerText='Subscribe'
+                ButtonElement.classList.remove('is-subscribed');
+            }
+    </script>
+</body>
+</html>
