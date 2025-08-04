@@ -1,155 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Todo List CSS</title>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-</head>
-<body>
+  <meta charset="UTF-8">
+  <title>Firebase Todo App</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f2f2f2;
     }
-    .addbutton {
-      background-color: green;
-      color: white;
-      border: none;
-      font-size: 15px;
-      cursor: pointer;
+
+    h1 {
+      text-align: center;
+      color: #333;
     }
-    .deletebutton {
-      background-color: darkred;
-      color: white;
-      border: none;
-      font-size: 15px;
-      cursor: pointer;
-      padding-top: 10px;
-      padding-bottom: 10px;
+
+    form {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
     }
-    .todogrid, .todogrid-input {
-      display: grid;
-      grid-template-columns: 200px 150px 150px 100px;
-      column-gap: 10px;
-      row-gap: 10px;
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
     }
-    .todogrid-input {
+
+    ul#todo-list {
+      list-style: none;
+      padding: 0;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    ul#todo-list li {
+      background: white;
+      padding: 12px;
       margin-bottom: 10px;
-    }
-    .nameinp, .dueinp, .timeinp {
-      font-size: 15px;
-      padding: 6px;
-    }
-    .subscribe-button {
-      border: none;
-      background-color: black;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 50px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .is-subscribed {
-      border: none;
-      background-color: rgb(242, 242, 242);
-      color: black;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
   </style>
+</head>
+<body>
 
-  <p>Todo List</p>
-  <div class="todogrid-input">
-    <input class="js-input1 nameinp" placeholder="Todo name" />
-    <input class="js-input2 dueinp" type="date" />
-    <input class="js-input3 timeinp" type="time" />
-    <button class="addbutton" onclick="addtodo()">Add</button>
-  </div>
-  <div class="js-display"></div>
+  <h1>📝 Firebase ToDo List</h1>
 
-  <p>This Button is Just for fun 👇</p>
-  <button class="js-button subscribe-button" onclick="
-    ButtonElement = document.querySelector('.js-button');
-    if (ButtonElement.innerHTML === 'Subscribe') {
-      ButtonElement.innerHTML = 'Subscribed';
-      ButtonElement.classList.add('is-subscribed');
-      localStorage.setItem('Q', 'Subscribe');
-    } else {
-      localStorage.setItem('Q', 'not Subscribe');
-      ButtonElement.innerHTML = 'Subscribe';
-      ButtonElement.classList.remove('is-subscribed');
-    }
-  ">Subscribe</button>
+  <form id="todo-form">
+    <input type="text" id="title" placeholder="Title" required>
+    <input type="text" id="description" placeholder="Description" required>
+    <button type="submit">Add</button>
+  </form>
 
-  <script>
-    // Your Firebase Config
+  <ul id="todo-list"></ul>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+
+    // ✅ Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
       authDomain: "todo-test-e8e2e.firebaseapp.com",
       projectId: "todo-test-e8e2e",
-      storageBucket: "todo-test-e8e2e.firebasestorage.app",
+      storageBucket: "todo-test-e8e2e.appspot.com",
       messagingSenderId: "54252991944",
       appId: "1:54252991944:web:01165f0f64af846710bcfd",
       measurementId: "G-M6Q8GW4PY1"
     };
 
     // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    // Add a todo
-    async function addtodo() {
-      const a = document.querySelector(".js-input1").value;
-      const b = document.querySelector(".js-input2").value;
-      const c = document.querySelector(".js-input3").value;
+    const todoForm = document.getElementById("todo-form");
+    const titleInput = document.getElementById("title");
+    const descriptionInput = document.getElementById("description");
+    const todoList = document.getElementById("todo-list");
 
-      if (a && b && c) {
-        await db.collection("todos").add({
-          name: a,
-          duedate: b,
-          duetime: c,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        document.querySelector(".js-input1").value = '';
-        document.querySelector(".js-input2").value = '';
-        document.querySelector(".js-input3").value = '';
-      }
+    // Function to render a todo item
+    function displayTodo(todo) {
+      const item = document.createElement("li");
+      item.innerText = `${todo.title} - ${todo.description}`;
+      todoList.appendChild(item);
     }
 
-    // Render todo list
-    function rendertodolist() {
-      db.collection("todos").orderBy("timestamp").onSnapshot(snapshot => {
-        const DisplayElement = document.querySelector(".js-display");
-        let html = '';
-        snapshot.forEach(doc => {
-          const { name, duedate, duetime } = doc.data();
-          html += `
-            <div class="todogrid">
-              <div>${name}</div> 
-              <div>${duedate}</div> 
-              <div>${duetime}</div> 
-              <button class="deletebutton" onclick="deleteTodo('${doc.id}')">Delete</button>
-            </div>`;
-        });
-        DisplayElement.innerHTML = html;
+    // Fetch and display todos on load
+    async function loadTodos() {
+      const querySnapshot = await getDocs(collection(db, "todos"));
+      querySnapshot.forEach((doc) => {
+        displayTodo(doc.data());
       });
     }
 
-    function deleteTodo(id) {
-      db.collection("todos").doc(id).delete();
-    }
+    // Add new todo
+    todoForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    // Load state of subscribe button
-    const a = localStorage.getItem('Q');
-    const ButtonElement = document.querySelector('.js-button');
-    if (a === 'Subscribe') {
-      ButtonElement.innerText = 'Subscribed';
-      ButtonElement.classList.add('is-subscribed');
-    } else {
-      ButtonElement.innerText = 'Subscribe';
-      ButtonElement.classList.remove('is-subscribed');
-    }
+      const title = titleInput.value.trim();
+      const description = descriptionInput.value.trim();
+      if (!title || !description) return;
 
-    // Start rendering
-    rendertodolist();
+      try {
+        await addDoc(collection(db, "todos"), {
+          title,
+          description
+        });
+        displayTodo({ title, description }); // Show immediately
+        todoForm.reset();
+      } catch (error) {
+        console.error("Error adding todo:", error);
+      }
+    });
+
+    // Load todos on page load
+    window.onload = loadTodos;
   </script>
+
 </body>
 </html>
