@@ -1,122 +1,155 @@
+<!DOCTYPE html>
 <html>
-<title>Todo List CSS</title>
+<head>
+  <title>Todo List CSS</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+</head>
 <body>
-    <style>
-        body{
-            font-family: Arial;
-        }
-        .addbutton{
-            background-color: green;
-            color: white;
-            border:none;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        .deletebutton{
-            background-color: darkred;
-            color: white;
-            border:none;
-            font-size: 15px;
-            cursor: pointer;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-        .todogrid,.todogrid-input{
-            display: grid;
-            grid-template-columns: 200px 150px 150px 100px;
-            column-gap: 10px;
-            row-gap: 10px;
-        }
-        .todogrid-input{
-            margin-bottom: 10px;
-        }
-        .nameinp,.dueinp,.timeinp{font-size: 15px; padding: 6px;}
-        .subscribe-button{
-                border: none;
-                background-color: black;
-                color: white;
-                padding-top: 10px;
-                padding-bottom: 10px;
-                padding-left: 15px;
-                padding-right: 15px;
-                border-radius: 50px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-            .is-subscribed{
-                border: none;
-                background-color: rgb(242,242,242);
-                color: black;
-            }
-    </style>
-    <p>Todo List</p>
-    <div class="todogrid-input">
-        <input class="js-input1 nameinp" placeholder="Todo name"></input>
-        <input class="js-input2 dueinp" type="date"></input>
-        <input class="js-input3 timeinp" type="time"></input>
-        <button class="addbutton" onclick="addtodo();rendertodolist()">Add</button>
-    </div>
-    <div class="js-display"></div>
-    <p>This Button is Just for fun👇</p>
-            <button class='js-button subscribe-button' onclick="
-        ButtonElement=document.querySelector('.js-button');
-        if (ButtonElement.innerHTML==='Subscribe'){
-            ButtonElement.innerHTML='Subscribed';
-            ButtonElement.classList.add('is-subscribed');
-            localStorage.setItem('Q','Subscribe')
+  <style>
+    body {
+      font-family: Arial;
+    }
+    .addbutton {
+      background-color: green;
+      color: white;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .deletebutton {
+      background-color: darkred;
+      color: white;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .todogrid, .todogrid-input {
+      display: grid;
+      grid-template-columns: 200px 150px 150px 100px;
+      column-gap: 10px;
+      row-gap: 10px;
+    }
+    .todogrid-input {
+      margin-bottom: 10px;
+    }
+    .nameinp, .dueinp, .timeinp {
+      font-size: 15px;
+      padding: 6px;
+    }
+    .subscribe-button {
+      border: none;
+      background-color: black;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .is-subscribed {
+      border: none;
+      background-color: rgb(242, 242, 242);
+      color: black;
+    }
+  </style>
 
-        }
-        else{
-            localStorage.setItem('Q','not Subscribe');
-            ButtonElement.innerHTML='Subscribe';
-            ButtonElement.classList.remove('is-subscribed');
-        }">Subscribe</button>
-    <script>
-        const MyArr=JSON.parse(localStorage.getItem('listarr'))||[]
-        if(localStorage.getItem('listarr')===''){
+  <p>Todo List</p>
+  <div class="todogrid-input">
+    <input class="js-input1 nameinp" placeholder="Todo name" />
+    <input class="js-input2 dueinp" type="date" />
+    <input class="js-input3 timeinp" type="time" />
+    <button class="addbutton" onclick="addtodo()">Add</button>
+  </div>
+  <div class="js-display"></div>
 
-        }
-        else{
-            rendertodolist()
-        }
-        function addtodo(){
-            const InputElement=document.querySelector(".js-input1")
-            const InputElement2=document.querySelector(".js-input2")
-            const InputElement3=document.querySelector(".js-input3")
-            const DisplayElement=document.querySelector(".js-display")
-            const a=InputElement.value;
-            const b=InputElement2.value;
-            const c=InputElement3.value;
-            MyArr.push({name:a,duedate:b,duetime:c})
-            localStorage.setItem('listarr',JSON.stringify(MyArr))
-        }
-        function rendertodolist(){
-            const DisplayElement=document.querySelector(".js-display")
-            var todolisthtml=``;
-            for(let i=0;i<MyArr.length;i++){
-                const{name,duedate,duetime}=MyArr[i];
-                const html=`
-                <div class="todogrid">
-                <div>${name}</div> 
-                <div>${duedate}</div> 
-                <div>${duetime}</div> 
-                <button class="deletebutton" onclick="MyArr.splice(${i},1);rendertodolist();localStorage.setItem('listarr',JSON.stringify(MyArr))">Delete</button>
-                </div>`;
-                todolisthtml+=html;
-            }
-            DisplayElement.innerHTML=todolisthtml;
-        }
+  <p>This Button is Just for fun 👇</p>
+  <button class="js-button subscribe-button" onclick="
+    ButtonElement = document.querySelector('.js-button');
+    if (ButtonElement.innerHTML === 'Subscribe') {
+      ButtonElement.innerHTML = 'Subscribed';
+      ButtonElement.classList.add('is-subscribed');
+      localStorage.setItem('Q', 'Subscribe');
+    } else {
+      localStorage.setItem('Q', 'not Subscribe');
+      ButtonElement.innerHTML = 'Subscribe';
+      ButtonElement.classList.remove('is-subscribed');
+    }
+  ">Subscribe</button>
 
-        const a=localStorage.getItem('Q');
-            ButtonElement=document.querySelector('.js-button');
-            if(a==='Subscribe'){
-                ButtonElement.innerText='Subscribed'
-                ButtonElement.classList.add('is-subscribed');
-            }
-            else{
-                ButtonElement.innerText='Subscribe'
-                ButtonElement.classList.remove('is-subscribed');
-            }
-    </script>
+  <script>
+    // Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
+      authDomain: "todo-test-e8e2e.firebaseapp.com",
+      projectId: "todo-test-e8e2e",
+      storageBucket: "todo-test-e8e2e.firebasestorage.app",
+      messagingSenderId: "54252991944",
+      appId: "1:54252991944:web:01165f0f64af846710bcfd",
+      measurementId: "G-M6Q8GW4PY1"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Add a todo
+    async function addtodo() {
+      const a = document.querySelector(".js-input1").value;
+      const b = document.querySelector(".js-input2").value;
+      const c = document.querySelector(".js-input3").value;
+
+      if (a && b && c) {
+        await db.collection("todos").add({
+          name: a,
+          duedate: b,
+          duetime: c,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.querySelector(".js-input1").value = '';
+        document.querySelector(".js-input2").value = '';
+        document.querySelector(".js-input3").value = '';
+      }
+    }
+
+    // Render todo list
+    function rendertodolist() {
+      db.collection("todos").orderBy("timestamp").onSnapshot(snapshot => {
+        const DisplayElement = document.querySelector(".js-display");
+        let html = '';
+        snapshot.forEach(doc => {
+          const { name, duedate, duetime } = doc.data();
+          html += `
+            <div class="todogrid">
+              <div>${name}</div> 
+              <div>${duedate}</div> 
+              <div>${duetime}</div> 
+              <button class="deletebutton" onclick="deleteTodo('${doc.id}')">Delete</button>
+            </div>`;
+        });
+        DisplayElement.innerHTML = html;
+      });
+    }
+
+    function deleteTodo(id) {
+      db.collection("todos").doc(id).delete();
+    }
+
+    // Load state of subscribe button
+    const a = localStorage.getItem('Q');
+    const ButtonElement = document.querySelector('.js-button');
+    if (a === 'Subscribe') {
+      ButtonElement.innerText = 'Subscribed';
+      ButtonElement.classList.add('is-subscribed');
+    } else {
+      ButtonElement.innerText = 'Subscribe';
+      ButtonElement.classList.remove('is-subscribed');
+    }
+
+    // Start rendering
+    rendertodolist();
+  </script>
 </body>
 </html>
