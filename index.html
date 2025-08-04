@@ -1,124 +1,156 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Firebase Todo App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background: #f2f2f2;
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-
-    form {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 2rem;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-    }
-
-    ul#todo-list {
-      list-style: none;
-      padding: 0;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    ul#todo-list li {
-      background: white;
-      padding: 12px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-  </style>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 </head>
+<title>Todo List CSS</title>
 <body>
+    <style>
+        body{
+            font-family: Arial;
+        }
+        .addbutton{
+            background-color: green;
+            color: white;
+            border:none;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .deletebutton{
+            background-color: darkred;
+            color: white;
+            border:none;
+            font-size: 15px;
+            cursor: pointer;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .todogrid,.todogrid-input{
+            display: grid;
+            grid-template-columns: 200px 150px 150px 100px;
+            column-gap: 10px;
+            row-gap: 10px;
+        }
+        .todogrid-input{
+            margin-bottom: 10px;
+        }
+        .nameinp,.dueinp,.timeinp{font-size: 15px; padding: 6px;}
+        .subscribe-button{
+                border: none;
+                background-color: black;
+                color: white;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                padding-left: 15px;
+                padding-right: 15px;
+                border-radius: 50px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .is-subscribed{
+                border: none;
+                background-color: rgb(242,242,242);
+                color: black;
+            }
+    </style>
+    <p>Todo List</p>
+    <div class="todogrid-input">
+        <input class="js-input1 nameinp" placeholder="Todo name"></input>
+        <input class="js-input2 dueinp" type="date"></input>
+        <input class="js-input3 timeinp" type="time"></input>
+        <button class="addbutton" onclick="addtodo()">Add</button>
+    </div>
+    <div class="js-display"></div>
+    <p>This Button is Just for fun👇</p>
+            <button class='js-button subscribe-button' onclick="
+        ButtonElement=document.querySelector('.js-button');
+        if (ButtonElement.innerHTML==='Subscribe'){
+            ButtonElement.innerHTML='Subscribed';
+            ButtonElement.classList.add('is-subscribed');
+            localStorage.setItem('Q','Subscribe')
 
-  <h1>📝 Firebase ToDo List</h1>
+        }
+        else{
+            localStorage.setItem('Q','not Subscribe');
+            ButtonElement.innerHTML='Subscribe';
+            ButtonElement.classList.remove('is-subscribed');
+        }">Subscribe</button>
+    <script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
+};
 
-  <form id="todo-form">
-    <input type="text" id="title" placeholder="Title" required>
-    <input type="text" id="description" placeholder="Description" required>
-    <button type="submit">Add</button>
-  </form>
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  <ul id="todo-list"></ul>
+async function addtodo(){
+    const a = document.querySelector(".js-input1").value.trim();
+    const b = document.querySelector(".js-input2").value;
+    const c = document.querySelector(".js-input3").value;
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    // Firebase imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
-
-    // ✅ Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
-      authDomain: "todo-test-e8e2e.firebaseapp.com",
-      projectId: "todo-test-e8e2e",
-      storageBucket: "todo-test-e8e2e.appspot.com",
-      messagingSenderId: "54252991944",
-      appId: "1:54252991944:web:01165f0f64af846710bcfd",
-      measurementId: "G-M6Q8GW4PY1"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const todoForm = document.getElementById("todo-form");
-    const titleInput = document.getElementById("title");
-    const descriptionInput = document.getElementById("description");
-    const todoList = document.getElementById("todo-list");
-
-    // Function to render a todo item
-    function displayTodo(todo) {
-      const item = document.createElement("li");
-      item.innerText = `${todo.title} - ${todo.description}`;
-      todoList.appendChild(item);
+    if(!a || !b || !c){
+        alert("Please fill in all fields");
+        return;
     }
 
-    // Fetch and display todos on load
-    async function loadTodos() {
-      const querySnapshot = await getDocs(collection(db, "todos"));
-      querySnapshot.forEach((doc) => {
-        displayTodo(doc.data());
-      });
-    }
-
-    // Add new todo
-    todoForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const title = titleInput.value.trim();
-      const description = descriptionInput.value.trim();
-      if (!title || !description) return;
-
-      try {
-        await addDoc(collection(db, "todos"), {
-          title,
-          description
+    try {
+        await db.collection("todos").add({
+            name: a,
+            duedate: b,
+            duetime: c,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        displayTodo({ title, description }); // Show immediately
-        todoForm.reset();
-      } catch (error) {
-        console.error("Error adding todo:", error);
-      }
+
+        // Clear inputs after adding
+        document.querySelector(".js-input1").value = "";
+        document.querySelector(".js-input2").value = "";
+        document.querySelector(".js-input3").value = "";
+    } catch(e) {
+        alert("Error adding todo: " + e.message);
+    }
+}
+
+function rendertodolist(){
+    db.collection("todos").orderBy("timestamp").onSnapshot(snapshot => {
+        const DisplayElement = document.querySelector(".js-display");
+        let html = '';
+        snapshot.forEach(doc => {
+            const {name, duedate, duetime} = doc.data();
+            html += `
+                <div class="todogrid">
+                    <div>${name}</div> 
+                    <div>${duedate}</div> 
+                    <div>${duetime}</div> 
+                    <button class="deletebutton" onclick="deleteTodo('${doc.id}')">Delete</button>
+                </div>
+            `;
+        });
+        DisplayElement.innerHTML = html;
     });
+}
 
-    // Load todos on page load
-    window.onload = loadTodos;
-  </script>
+function deleteTodo(id){
+    db.collection("todos").doc(id).delete();
+}
 
+// Start realtime listener on page load
+rendertodolist();
+
+const a=localStorage.getItem('Q');
+ButtonElement=document.querySelector('.js-button');
+if(a==='Subscribe'){
+    ButtonElement.innerText='Subscribed'
+    ButtonElement.classList.add('is-subscribed');
+}
+else{
+    ButtonElement.innerText='Subscribe'
+    ButtonElement.classList.remove('is-subscribed');
+}
+    </script>
 </body>
 </html>
