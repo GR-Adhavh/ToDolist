@@ -15,14 +15,6 @@
       cursor: pointer;
       padding: 8px 12px;
     }
-    .deletebutton {
-      background-color: darkred;
-      color: white;
-      border: none;
-      font-size: 15px;
-      cursor: pointer;
-      padding: 8px 12px;
-    }
     .todogrid, .todogrid-input {
       display: grid;
       grid-template-columns: 300px 100px;
@@ -40,16 +32,16 @@
   </style>
 </head>
 <body>
-  <p>Add Random text you want</p>
+  <p>Enter any Text you want</p>
   <div class="todogrid-input">
-    <input class="js-input1 nameinp" placeholder="Enter" />
+    <input class="js-input1 nameinp" placeholder="Enter " />
     <button class="addbutton" onclick="addtodo()">Add</button>
   </div>
   <div class="js-display"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
@@ -83,10 +75,6 @@
       }
     }
 
-    window.deleteTodo = async function (id) {
-      await deleteDoc(doc(db, "todos", id));
-    }
-
     function renderTodoList() {
       const q = query(collection(db, "todos"), orderBy("timestamp"));
       onSnapshot(q, (snapshot) => {
@@ -97,7 +85,6 @@
           html += `
             <div class="todogrid">
               <div>${data.name}</div>
-              <button class="deletebutton" onclick="deleteTodo('${doc.id}')">Delete</button>
             </div>
           `;
         });
