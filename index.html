@@ -1,155 +1,111 @@
 <html>
 <head>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <title>Todo List</title>
+  <style>
+    body {
+      font-family: Arial;
+    }
+    .addbutton {
+      background-color: green;
+      color: white;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+    .deletebutton {
+      background-color: darkred;
+      color: white;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+    .todogrid, .todogrid-input {
+      display: grid;
+      grid-template-columns: 300px 100px;
+      column-gap: 10px;
+      row-gap: 10px;
+      align-items: center;
+    }
+    .todogrid-input {
+      margin-bottom: 20px;
+    }
+    .nameinp {
+      font-size: 15px;
+      padding: 6px;
+    }
+  </style>
 </head>
-<title>Todo List CSS</title>
 <body>
-    <style>
-        body{
-            font-family: Arial;
-        }
-        .addbutton{
-            background-color: green;
-            color: white;
-            border:none;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        .deletebutton{
-            background-color: darkred;
-            color: white;
-            border:none;
-            font-size: 15px;
-            cursor: pointer;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-        .todogrid,.todogrid-input{
-            display: grid;
-            grid-template-columns: 200px 150px 150px 100px;
-            column-gap: 10px;
-            row-gap: 10px;
-        }
-        .todogrid-input{
-            margin-bottom: 10px;
-        }
-        .nameinp,.dueinp,.timeinp{font-size: 15px; padding: 6px;}
-        .subscribe-button{
-                border: none;
-                background-color: black;
-                color: white;
-                padding-top: 10px;
-                padding-bottom: 10px;
-                padding-left: 15px;
-                padding-right: 15px;
-                border-radius: 50px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-            .is-subscribed{
-                border: none;
-                background-color: rgb(242,242,242);
-                color: black;
-            }
-    </style>
-    <p>Todo List</p>
-    <div class="todogrid-input">
-        <input class="js-input1 nameinp" placeholder="Todo name"></input>
-        <input class="js-input2 dueinp" type="date"></input>
-        <input class="js-input3 timeinp" type="time"></input>
-        <button class="addbutton" onclick="addtodo()">Add</button>
-    </div>
-    <div class="js-display"></div>
-    <p>This Button is Just for fun👇</p>
-            <button class='js-button subscribe-button' onclick="
-        ButtonElement=document.querySelector('.js-button');
-        if (ButtonElement.innerHTML==='Subscribe'){
-            ButtonElement.innerHTML='Subscribed';
-            ButtonElement.classList.add('is-subscribed');
-            localStorage.setItem('Q','Subscribe')
+  <p>Add Random text you want</p>
+  <div class="todogrid-input">
+    <input class="js-input1 nameinp" placeholder="Enter" />
+    <button class="addbutton" onclick="addtodo()">Add</button>
+  </div>
+  <div class="js-display"></div>
 
-        }
-        else{
-            localStorage.setItem('Q','not Subscribe');
-            ButtonElement.innerHTML='Subscribe';
-            ButtonElement.classList.remove('is-subscribed');
-        }">Subscribe</button>
-<script type="module">
-  // Import Firebase modular functions
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
-    authDomain: "todo-test-e8e2e.firebaseapp.com",
-    projectId: "todo-test-e8e2e",
-    storageBucket: "todo-test-e8e2e.appspot.com",
-    messagingSenderId: "54252991944",
-    appId: "1:54252991944:web:01165f0f64af846710bcfd",
-    measurementId: "G-M6Q8GW4PY1"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
+      authDomain: "todo-test-e8e2e.firebaseapp.com",
+      projectId: "todo-test-e8e2e",
+      storageBucket: "todo-test-e8e2e.appspot.com",
+      messagingSenderId: "54252991944",
+      appId: "1:54252991944:web:01165f0f64af846710bcfd",
+      measurementId: "G-M6Q8GW4PY1"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  // Add Todo
-  window.addtodo = async function () {
-    const name = document.querySelector(".js-input1").value.trim();
-    const dueDate = document.querySelector(".js-input2").value;
-    const dueTime = document.querySelector(".js-input3").value;
+    window.addtodo = async function () {
+      const name = document.querySelector(".js-input1").value.trim();
+      if (!name) {
+        alert("Please enter a todo item.");
+        return;
+      }
 
-    if (!name || !dueDate || !dueTime) {
-      alert("Please fill in all fields");
-      return;
+      try {
+        await addDoc(collection(db, "todos"), {
+          name,
+          timestamp: serverTimestamp()
+        });
+
+        document.querySelector(".js-input1").value = "";
+      } catch (e) {
+        alert("Error adding todo: " + e.message);
+      }
     }
 
-    try {
-      await addDoc(collection(db, "todos"), {
-        name,
-        duedate: dueDate,
-        duetime: dueTime,
-        timestamp: serverTimestamp()
-      });
-
-      document.querySelector(".js-input1").value = "";
-      document.querySelector(".js-input2").value = "";
-      document.querySelector(".js-input3").value = "";
-    } catch (e) {
-      alert("Error adding todo: " + e.message);
+    window.deleteTodo = async function (id) {
+      await deleteDoc(doc(db, "todos", id));
     }
-  }
 
-  // Display Todos in real-time
-  function renderTodoList() {
-    const q = query(collection(db, "todos"), orderBy("timestamp"));
-    onSnapshot(q, (snapshot) => {
-      const display = document.querySelector(".js-display");
-      let html = '';
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        html += `
-          <div class="todogrid">
-            <div>${data.name}</div>
-            <div>${data.duedate}</div>
-            <div>${data.duetime}</div>
-            <button class="deletebutton" onclick="deleteTodo('${doc.id}')">Delete</button>
-          </div>
-        `;
+    function renderTodoList() {
+      const q = query(collection(db, "todos"), orderBy("timestamp"));
+      onSnapshot(q, (snapshot) => {
+        const display = document.querySelector(".js-display");
+        let html = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          html += `
+            <div class="todogrid">
+              <div>${data.name}</div>
+              <button class="deletebutton" onclick="deleteTodo('${doc.id}')">Delete</button>
+            </div>
+          `;
+        });
+        display.innerHTML = html;
       });
-      display.innerHTML = html;
-    });
-  }
+    }
 
-  // Delete Todo
-  window.deleteTodo = async function (id) {
-    await deleteDoc(doc(db, "todos", id));
-  }
-
-  renderTodoList();
-
-    </script>
+    renderTodoList();
+  </script>
 </body>
 </html>
-
-
