@@ -1,7 +1,5 @@
 <html>
 <head>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
   <title>Todo List</title>
   <style>
     body {
@@ -14,6 +12,14 @@
       font-size: 15px;
       cursor: pointer;
       padding: 8px 12px;
+    }
+    .removebutton {
+      background-color: crimson;
+      color: white;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 6px 10px;
     }
     .todogrid, .todogrid-input {
       display: grid;
@@ -38,10 +44,9 @@
     <button class="addbutton" onclick="addtodo()">Add</button>
   </div>
   <div class="js-display"></div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, orderBy, query, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
@@ -56,35 +61,44 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Tracks IDs hidden by the user this session (in-memory only)
+    const hiddenIds = new Set();
+
     window.addtodo = async function () {
       const name = document.querySelector(".js-input1").value.trim();
       if (!name) {
         alert("Please enter a todo item.");
         return;
       }
-
       try {
         await addDoc(collection(db, "todos"), {
           name,
           timestamp: serverTimestamp()
         });
-
         document.querySelector(".js-input1").value = "";
       } catch (e) {
         alert("Error adding todo: " + e.message);
       }
-    }
+    };
+
+    window.hideRow = function (id) {
+      hiddenIds.add(id);
+      const row = document.querySelector(`[data-id="${id}"]`);
+      if (row) row.remove();
+    };
 
     function renderTodoList() {
       const q = query(collection(db, "todos"), orderBy("timestamp"));
       onSnapshot(q, (snapshot) => {
         const display = document.querySelector(".js-display");
         let html = '';
-        snapshot.forEach(doc => {
-          const data = doc.data();
+        snapshot.forEach(docSnap => {
+          if (hiddenIds.has(docSnap.id)) return; // skip hidden rows
+          const data = docSnap.data();
           html += `
-            <div class="todogrid">
+            <div class="todogrid" data-id="${docSnap.id}">
               <div>${data.name}</div>
+              <button class="removebutton" onclick="hideRow('${docSnap.id}')">Remove</button>
             </div>
           `;
         });
