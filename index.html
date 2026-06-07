@@ -46,7 +46,7 @@
   <div class="js-display"></div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, orderBy, query, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, orderBy, query, serverTimestamp, onSnapshot, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAqpLTMf5CLwbMWAdqZ-dS66onqBz5tmwY",
@@ -61,8 +61,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Tracks IDs hidden by the user this session (in-memory only)
-    const hiddenIds = new Set();
+    let hiddenIds = new Set();
 
     window.addtodo = async function () {
       const name = document.querySelector(".js-input1").value.trim();
@@ -81,32 +80,46 @@
       }
     };
 
-    window.hideRow = function (id) {
-      hiddenIds.add(id);
-      const row = document.querySelector(`[data-id="${id}"]`);
-      if (row) row.remove();
+    // Writes the hidden ID to a separate "hidden_todos" collection in Firestore
+    window.hideRow = async function (id) {
+      try {
+        await setDoc(doc(db, "hidden_todos", id), { hiddenAt: serverTimestamp() });
+        // onSnapshot on hidden_todos will automatically re-render
+      } catch (e) {
+        alert("Error hiding todo: " + e.message);
+      }
     };
 
-    function renderTodoList() {
-      const q = query(collection(db, "todos"), orderBy("timestamp"));
-      onSnapshot(q, (snapshot) => {
-        const display = document.querySelector(".js-display");
-        let html = '';
-        snapshot.forEach(docSnap => {
-          if (hiddenIds.has(docSnap.id)) return; // skip hidden rows
-          const data = docSnap.data();
-          html += `
-            <div class="todogrid" data-id="${docSnap.id}">
-              <div>${data.name}</div>
-              <button class="removebutton" onclick="hideRow('${docSnap.id}')">Remove</button>
-            </div>
-          `;
-        });
-        display.innerHTML = html;
+    function renderTodoList(todos) {
+      const display = document.querySelector(".js-display");
+      let html = '';
+      todos.forEach(({ id, data }) => {
+        if (hiddenIds.has(id)) return;
+        html += `
+          <div class="todogrid" data-id="${id}">
+            <div>${data.name}</div>
+            <button class="removebutton" onclick="hideRow('${id}')">Remove</button>
+          </div>
+        `;
       });
+      display.innerHTML = html;
     }
 
-    renderTodoList();
+    let latestTodos = [];
+
+    // Listen to todos
+    const todosQuery = query(collection(db, "todos"), orderBy("timestamp"));
+    onSnapshot(todosQuery, (snapshot) => {
+      latestTodos = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderTodoList(latestTodos);
+    });
+
+    // Listen to hidden_todos — re-render whenever something is hidden
+    onSnapshot(collection(db, "hidden_todos"), (snapshot) => {
+      hiddenIds = new Set(snapshot.docs.map(d => d.id));
+      renderTodoList(latestTodos);
+    });
+
   </script>
 </body>
 </html>
